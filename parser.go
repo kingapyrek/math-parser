@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
+	"sync"
 )
+
+var wg sync.WaitGroup
 
 // Interface for numberNode and operatorNode
 type node interface {
@@ -123,13 +128,36 @@ func (p *parser) parse() node {
 }
 
 func main() {
-	expression := "(4 + 5 * (7 - 3)) - 2"
-	parser := &parser{expression: expression, pos: 0}
+	file, err := os.Open("equations.txt")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
 
-	//start parsing expression
-	ast := parser.parse()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		equation := scanner.Text()
 
-	// Evaluation is a separate step
-	result := ast.eval()
-	fmt.Println(result) // Output: 22
+		// Increment the WaitGroup counter
+		wg.Add(1)
+
+		// Create goroutine to parralel parsing and evaluating equations
+		go func(eq string) {
+			defer wg.Done()
+
+			parser := &parser{expression: eq, pos: 0}
+			ast := parser.parse()
+			result := ast.eval()
+
+			fmt.Printf("%s = %d\n", eq, result)
+		}(equation)
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error reading file:", err)
+	}
 }
