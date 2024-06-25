@@ -77,15 +77,27 @@ func (p *parser) parsePrimary() node {
 		p.moveCursor()
 		node := p.parseAddSubOp()
 		if p.currentChar() != ')' {
-			panic("Expected ')' after '(")
+			panic("Invalid character. Expected ')' after '(")
 		}
 		//move cursor after expression and char ')'
 		p.moveCursor()
 		return node
 	} else if curr >= '0' && curr <= '9' {
 		//handle digit
+		value, err := strconv.Atoi(string(curr))
+		if err != nil {
+			panic("Conversion char to integer failed.")
+		}
+		// Validation whether number is one digit and not fractional
+		if p.pos+1 < len(p.expression) {
+			nextChar := p.expression[p.pos+1]
+			if nextChar >= '0' && nextChar <= '9' {
+				panic("Only single-digit integers are allowed.")
+			} else if nextChar == '.' {
+				panic("Fractional numbers are not allowed.")
+			}
+		}
 		p.moveCursor()
-		value, _ := strconv.Atoi(string(curr))
 		return &numberNode{value: value}
 	} else {
 		panic("unexpexted char")
