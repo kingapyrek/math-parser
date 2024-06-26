@@ -70,46 +70,55 @@ func (p *parser) moveCursor() {
 	}
 }
 
-func (p *parser) parsePrimary() node {
+func (p *parser) parsePrimary() (node, error) {
 	curr := p.currentChar()
 	if curr == '(' {
 		//move to expression inside ()
 		p.moveCursor()
-		node := p.parseAddSubOp()
+		node, err := p.parseAddSubOp()
+		if err != nil {
+			return nil, err
+		}
 		if p.currentChar() != ')' {
-			panic("Invalid character. Expected ')' after '(")
+			return nil, fmt.Errorf("invalid character, expected ')' after '(")
 		}
 		//move cursor after expression and char ')'
 		p.moveCursor()
-		return node
+		return node, nil
 	} else if curr >= '0' && curr <= '9' {
 		//handle digit
 		value, err := strconv.Atoi(string(curr))
 		if err != nil {
-			panic("Conversion char to integer failed.")
+			return nil, fmt.Errorf("conversion char to integer failed")
 		}
 		// Validation whether number is one digit and not fractional
 		if p.pos+1 < len(p.expression) {
 			nextChar := p.expression[p.pos+1]
 			if nextChar >= '0' && nextChar <= '9' {
-				panic("Only single-digit integers are allowed.")
+				return nil, fmt.Errorf("only single-digit integers are allowed")
 			} else if nextChar == '.' {
-				panic("Fractional numbers are not allowed.")
+				return nil, fmt.Errorf("fractional numbers are not allowed")
 			}
 		}
 		p.moveCursor()
-		return &numberNode{value: value}
+		return &numberNode{value: value}, nil
 	} else {
-		panic("unexpexted char")
+		return nil, fmt.Errorf("unexpected char in expression")
 	}
 }
 
-func (p *parser) parseMulDiv() node {
-	node := p.parsePrimary()
+func (p *parser) parseMulDiv() (node, error) {
+	node, err := p.parsePrimary()
+	if err != nil {
+		return nil, err
+	}
 	for p.currentChar() == '*' || p.currentChar() == '/' {
 		operation := p.currentChar()
 		p.moveCursor()
-		right := p.parsePrimary()
+		right, err := p.parsePrimary()
+		if err != nil {
+			return nil, err
+		}
 
 		node = &operatorNode{
 			left:      node,
@@ -117,25 +126,31 @@ func (p *parser) parseMulDiv() node {
 			right:     right,
 		}
 	}
-	return node
+	return node, nil
 }
 
-func (p *parser) parseAddSubOp() node {
-	node := p.parseMulDiv()
+func (p *parser) parseAddSubOp() (node, error) {
+	node, err := p.parseMulDiv()
+	if err != nil {
+		return nil, err
+	}
 	for p.currentChar() == '+' || p.currentChar() == '-' {
 		operation := p.currentChar()
 		p.moveCursor()
-		right := p.parseMulDiv()
+		right, err := p.parseMulDiv()
+		if err != nil {
+			return nil, err
+		}
 		node = &operatorNode{
 			left:      node,
 			operation: operation,
 			right:     right,
 		}
 	}
-	return node
+	return node, nil
 }
 
-func (p *parser) parse() node {
+func (p *parser) parse() (node, error) {
 	return p.parseAddSubOp()
 }
 
@@ -159,8 +174,12 @@ func main() {
 			defer wg.Done()
 
 			parser := &parser{expression: eq, pos: 0}
-			ast := parser.parse()
-			result := ast.eval()
+			tree, err := parser.parse()
+			if err != nil {
+				fmt.Printf("Error parsing expression %v: %v\n", eq, err)
+				return
+			}
+			result := tree.eval()
 
 			fmt.Printf("%s = %d\n", eq, result)
 		}(equation)
