@@ -25,12 +25,12 @@ type operatorNode struct {
 	operation byte
 }
 
-// evaluate node with number
+// Evaluate node with number
 func (node *numberNode) eval() int {
 	return node.value
 }
 
-// evaluate node with operator
+// Evaluate node with operator
 func (node *operatorNode) eval() int {
 	leftResult := node.left.eval()
 	rightResult := node.right.eval()
@@ -64,7 +64,7 @@ func (p *parser) currentChar() byte {
 
 func (p *parser) moveCursor() {
 	p.pos++
-	//ignore whitespace
+	// ignore whitespace
 	if p.currentChar() == ' ' {
 		p.pos++
 	}
@@ -73,25 +73,25 @@ func (p *parser) moveCursor() {
 func (p *parser) parsePrimary() (node, error) {
 	curr := p.currentChar()
 	if curr == '(' {
-		//move to expression inside ()
+		// move to expression inside ()
 		p.moveCursor()
 		node, err := p.parseAddSubOp()
 		if err != nil {
 			return nil, err
 		}
 		if p.currentChar() != ')' {
-			return nil, fmt.Errorf("invalid character, expected ')' after '(")
+			return nil, fmt.Errorf("invalid character, expected ')' after '('")
 		}
-		//move cursor after expression and char ')'
+		// move cursor after expression and char ')'
 		p.moveCursor()
 		return node, nil
 	} else if curr >= '0' && curr <= '9' {
-		//handle digit
+		// handle digit
 		value, err := strconv.Atoi(string(curr))
 		if err != nil {
 			return nil, fmt.Errorf("conversion char to integer failed")
 		}
-		// Validation whether number is one digit and not fractional
+		// validation whether number is one digit and not fractional
 		if p.pos+1 < len(p.expression) {
 			nextChar := p.expression[p.pos+1]
 			if nextChar >= '0' && nextChar <= '9' {
@@ -103,7 +103,7 @@ func (p *parser) parsePrimary() (node, error) {
 		p.moveCursor()
 		return &numberNode{value: value}, nil
 	} else {
-		return nil, fmt.Errorf("unexpected char in expression")
+		return nil, fmt.Errorf("unexpected character in expression")
 	}
 }
 
@@ -151,7 +151,18 @@ func (p *parser) parseAddSubOp() (node, error) {
 }
 
 func (p *parser) parse() (node, error) {
-	return p.parseAddSubOp()
+	node, err := p.parseAddSubOp()
+	if err != nil {
+		return nil, err
+	}
+	if p.currentChar() != 0 {
+		if p.currentChar() == ')' {
+			return nil, fmt.Errorf("unexpected ')' without opening '(")
+		} else {
+			return nil, fmt.Errorf("unexpected character in expression")
+		}
+	}
+	return node, nil
 }
 
 func main() {
@@ -168,10 +179,10 @@ func main() {
 	for scanner.Scan() {
 		equation := scanner.Text()
 
-		// Increment the WaitGroup counter
+		// increment the WaitGroup counter
 		wg.Add(1)
 
-		// Create goroutine to parralel parsing and evaluating equations
+		// create goroutine to parralel parsing and evaluating equations
 		go func(eq string) {
 			defer wg.Done()
 
@@ -187,7 +198,7 @@ func main() {
 		}(equation)
 	}
 
-	// Wait for all goroutines to finish
+	// wait for all goroutines to finish
 	wg.Wait()
 
 	if err := scanner.Err(); err != nil {
