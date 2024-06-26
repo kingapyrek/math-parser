@@ -167,6 +167,7 @@ func TestParse(t *testing.T) {
 		{"(1 + 5 * 3", 0, errUnmatchedParenthesis},
 		{"1+2)", 0, errNotOpenedParanthesis},
 		{"1a + 4", 0, errUnexpectedCharacter},
+		{"-10", 0, errUnexpectedCharacter},
 	}
 
 	for _, test := range tests {
