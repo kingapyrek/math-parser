@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-// Define expected error messages
 var (
 	errUnexpectedCharacter  = errors.New("unexpected character in expression")
 	errFractionalNumber     = errors.New("fractional numbers are not allowed")
@@ -16,7 +15,6 @@ var (
 	errNotOpenedParanthesis = errors.New("unexpected ')' without opening '(")
 )
 
-// TestParseAddSub tests the parseAddSub function with various inputs
 func TestParseAddSub(t *testing.T) {
 	tests := []struct {
 		expression  string
@@ -62,7 +60,6 @@ func TestParseAddSub(t *testing.T) {
 	}
 }
 
-// TestParseMulDiv tests the parseMulDiv function with various inputs
 func TestParseMulDiv(t *testing.T) {
 	tests := []struct {
 		expression     string
@@ -105,7 +102,6 @@ func TestParseMulDiv(t *testing.T) {
 	}
 }
 
-// TestParsePrimary tests the parsePrimary function with various inputs
 func TestParsePrimary(t *testing.T) {
 	tests := []struct {
 		expression     string
@@ -146,7 +142,6 @@ func TestParsePrimary(t *testing.T) {
 	}
 }
 
-// TestParse tests the parse function with various inputs
 func TestParse(t *testing.T) {
 	tests := []struct {
 		expression     string
@@ -250,7 +245,7 @@ func TestNumberNodeEval(t *testing.T) {
 		{"NegativeNumber", -3, -3},
 		{"Zero", 0, 0},
 		{"LargeNumber", 1000000, 1000000},
-		{"MinInt", -2147483648, -2147483648}, // testing with minimum integer value
+		{"MinInt", -2147483648, -2147483648},
 	}
 
 	for _, test := range tests {
