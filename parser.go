@@ -155,7 +155,9 @@ func (p *parser) parse() (node, error) {
 }
 
 func main() {
-	file, err := os.Open("equations.txt")
+	fileName := os.Args[1]
+
+	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
