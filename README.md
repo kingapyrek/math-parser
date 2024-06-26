@@ -5,7 +5,11 @@ This Go application is a top-down parser for mathematical operations:
 - `*`, `/`
 - `()`
 
-The parser takes into account precedence and parenthesis. It evaluates equations by creating a tree, where a node can be a number or operation. Example tree for the equation: `(4 + 5 * (7 - 3)) - 2`,
+The parser takes into account precedence and parenthesis. It evaluates equations by creating a tree, where a node can be a number or operation. Example tree for the equation: `(4 + 5 * (7 - 3)) - 2`:
+
+<!-- ![tree](https://github.com/kingapyrek/math-parser/blob/main/tree.png?raw=True) -->
+
+<img src="doc/tree.png" width="280">
 
 ## Assumptions:
 - only one-digit numbers are allowed
